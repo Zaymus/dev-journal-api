@@ -1,0 +1,23 @@
+{
+  "name": "dev_journal_api",
+  "version": "1.0.0",
+  "description": "developer journal/blog to use as a collection of things I have accomplished, encountered or solved to keep track of my progress and to refer to later if need be",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run:dev": "nodemon app.js",
+    "run": "node app.js"
+  },
+  "author": "Carson Brown",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongodb": "^4.13.0",
+    "mongoose": "^6.8.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
