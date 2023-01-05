@@ -1,11 +1,8 @@
 const express = require("express");
-const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const middleware = require("./middleware");
 const mongoose = require("mongoose");
-
-dotenv.config();
-const env = process.env;
+const { env } = require("./util/constants");
 
 const app = express();
 const apiRouter = express.Router();

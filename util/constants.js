@@ -1,3 +1,7 @@
+const dotenv = require("dotenv").config();
+
+const env = process.env;
+
 const userValidation = {
 	EMAIL_FORMAT: new RegExp(/^([A-Za-z0-9])+@([A-Za-z0-9])+..([A-Za-z]{2,4})$/),
 	PASSWORD_FORMAT:
@@ -9,6 +13,7 @@ SERVER_STATUS = {
 };
 
 module.exports = {
+	env,
   userValidation,
   SERVER_STATUS,
 }
