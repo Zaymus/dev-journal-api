@@ -36,21 +36,25 @@ exports.postCreateUser = (req, res, next) => {
             next(error);
           })
           .catch(err => {
-            console.log(err);
+            next(err);
           });
         }
         else {
-          res.json(user);
+          res.status(201).json(user);
         }
       })
       .catch(err => {
-        throw err;
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
       });
     })
     .catch(err => {
-      console.log(err);
-      err.statusCode = 500;
-      throw err;
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
     })
 }
 
@@ -85,11 +89,38 @@ exports.postLogin = (req, res, next) => {
         }
       })
       .catch(err => {
-        console.log(err);
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
       })
     }
   })
   .catch(err => {
-    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  })
+}
+
+exports.deleteUser = (req, res, next) => {
+  const userId = req.params.userId;
+
+  User.findByIdAndDelete(userId)
+  .then(user => {
+    if (!user) {
+      const error = new Error(`Could not find a user with the given id.`);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json(user);
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   })
 }
