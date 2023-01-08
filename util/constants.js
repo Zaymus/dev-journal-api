@@ -12,8 +12,15 @@ SERVER_STATUS = {
 	UP: "up",
 };
 
+POST_TYPES = {
+	DAILY_LOG: "daily-log",
+	SOLUTION_LOG: "solution",
+	CONVERSATION_LOG: "conversation"
+}
+
 module.exports = {
 	env,
   userValidation,
   SERVER_STATUS,
+	POST_TYPES,
 }
