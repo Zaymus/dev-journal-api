@@ -152,7 +152,13 @@ exports.patchPost = (req, res, next) => {
   var updateDoc;
 
   if (postType === POST_TYPES.DAILY_LOG) {
-    DailyLog.findById(postId).then(post => {
+    DailyLog.findById(postId)
+    .then(post => {
+      if (!post) {
+        const error = new Error(`Could not find post: ${postId}`);
+        error.statusCode = 400;
+        throw error;
+      }
       if (!post.editable) {
         const error = new Error('Post is no longer available to be edited.');
         error.statusCode = 400;
@@ -193,7 +199,7 @@ exports.patchPost = (req, res, next) => {
           throw error;
         }
         if (!result.modifiedCount) {
-          res.status(200).json({message: "Saved Post.", postId: postId});
+          res.status(200).json({message: "Post has been saved.", postId: postId});
         } else {
           res.status(200).json({message: "Post has been saved and updated.", postId: postId});
         }
