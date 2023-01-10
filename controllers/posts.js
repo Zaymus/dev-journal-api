@@ -222,13 +222,9 @@ exports.deletePost = (req, res, next) => {
 
   DailyLog.deleteOne({_id: postId})
   .then(result => {
-    if(!result.acknowledged) {
-      const error = new Error('Post deletion failed.');
-      error.statusCode = 500;
-      throw error;
-    }
-    if(!result.deletedCount) {
-      const error = new Error('Post found, unable to delete.');
+    console.log(result)
+    if(!result.acknowledged || !result.deletedCount) {
+      const error = new Error('Unable to find or delete post.');
       error.statusCode = 500;
       throw error;
     }
