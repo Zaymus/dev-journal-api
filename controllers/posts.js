@@ -152,27 +152,8 @@ exports.patchPost = (req, res, next) => {
   var updateDoc;
 
   if (postType === POST_TYPES.DAILY_LOG) {
-    DailyLog.findById(postId)
-    .then(post => {
-      if (!post) {
-        const error = new Error(`Could not find post: ${postId}`);
-        error.statusCode = 400;
-        throw error;
-      }
-      if (!post.editable) {
-        const error = new Error('Post is no longer available to be edited.');
-        error.statusCode = 400;
-        throw error;
-      }
-      docType = DailyLog;
-      updateDoc = dailyLogDoc;
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
+    docType = DailyLog;
+    updateDoc = dailyLogDoc;
   } else if (postType === POST_TYPES.CONVERSATION_LOG) {
     docType = ConversationLog;
     updateDoc = conversationLogDoc;
@@ -186,7 +167,23 @@ exports.patchPost = (req, res, next) => {
   }
 
   if(updateDoc && docType) {
-    docType.updateOne({_id: postId}, updateDoc)
+    docType.findById(postId)
+    .then(post => {
+      if (!post) {
+        const error = new Error(`Could not find post: ${postId}`);
+        error.statusCode = 400;
+        throw error;
+      }
+      return post.type === POST_TYPES.DAILY_LOG ? post.editable : true;
+    })
+    .then(editable => {
+      if (!editable) {
+        const error = new Error('Post is no longer availble to be edited.');
+        error.statusCode = 400;
+        throw error;
+      }
+
+      docType.updateOne({_id: postId}, updateDoc)
       .then(result => {
         if(!result.acknowledged) {
           const error = new Error('Post update failed.');
@@ -210,6 +207,13 @@ exports.patchPost = (req, res, next) => {
         }
         next(err);
       });
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
   }
 }
 
