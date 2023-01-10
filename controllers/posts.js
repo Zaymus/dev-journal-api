@@ -5,7 +5,7 @@ const { POST_TYPES, env } = require("../util/constants");
 exports.postCreatePost = (req, res, next) => {
   const date = new Date();
   const type = req.query.type;
-  const editWindow = new Date().setUTCHours(23, 59, 59, 999);
+  var postData;
 
   User.findById(req.userId)
   .then(user => {
@@ -13,18 +13,18 @@ exports.postCreatePost = (req, res, next) => {
       DailyLog.create({
         date: date,
         author: user._id,
-        editWindow: editWindow,
         type: type,
         accomplished: req.body.accomplished,
         didWell: req.body.didWell,
         tomorrowTasks: req.body.tomorrowTasks,
       })
       .then(post => {
+        postData = post;
         user.posts.push(post);
         return user.save();
       })
       .then(result => {
-        res.status(201).json({message: "Post created Successfully!"});
+        res.status(201).json({message: "Post created Successfully!", post: postData});
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -41,11 +41,12 @@ exports.postCreatePost = (req, res, next) => {
         notes: req.body.notes,
       })
       .then(post => {
+        postData = post;
         user.posts.push(post);
         return user.save();
       })
       .then(result => {
-        res.status(201).json({message: "Post created Successfully!"});
+        res.status(201).json({message: "Post created Successfully!", post: postData});
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -62,11 +63,12 @@ exports.postCreatePost = (req, res, next) => {
         solution: req.body.solution,
       })
       .then(post => {
+        postData = post;
         user.posts.push(post);
         return user.save();
       })
       .then(result => {
-        res.status(201).json({message: "Post created Successfully!"});
+        res.status(201).json({message: "Post created Successfully!", post: postData});
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -122,4 +124,111 @@ exports.getPostById = (req, res, next) => {
     }
     next(err);
   })
+}
+
+exports.patchPost = (req, res, next) => {
+  const postId = req.params.postId;
+  const postType = req.query.postType;
+  const dailyLogDoc = {
+    $set: {
+      accomplished: req.body.accomplished, 
+      didWell: req.body.didWell, 
+      tomorrowTasks: req.body.tomorrowTasks
+    }
+  };
+  const conversationLogDoc = {
+    $set: {
+      colleague: req.body.colleague, 
+      notes: req.body.notes, 
+    }
+  };
+  const solutionLogDoc = {
+    $set: {
+      problem: req.body.problem, 
+      solution: req.body.solution, 
+    }
+  };
+  var docType;
+  var updateDoc;
+
+  if (postType === POST_TYPES.DAILY_LOG) {
+    DailyLog.findById(postId).then(post => {
+      if (!post.editable) {
+        const error = new Error('Post is no longer available to be edited.');
+        error.statusCode = 400;
+        throw error;
+      }
+      docType = DailyLog;
+      updateDoc = dailyLogDoc;
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+  } else if (postType === POST_TYPES.CONVERSATION_LOG) {
+    docType = ConversationLog;
+    updateDoc = conversationLogDoc;
+  } else if (postType === POST_TYPES.SOLUTION_LOG) {
+    docType = SolutionLog;
+    updateDoc = solutionLogDoc;
+  } else {
+    const error = new Error(`Unknown post type: \"${type}\".`);
+    error.statusCode = 500;
+    next(error);
+  }
+
+  if(updateDoc && docType) {
+    docType.updateOne({_id: postId}, updateDoc)
+      .then(result => {
+        if(!result.acknowledged) {
+          const error = new Error('Post update failed.');
+          error.statusCode = 500;
+          throw error;
+        }
+        if(!result.matchedCount) {
+          const error = new Error(`Failed to fetch post with id: ${postId}.`);
+          error.statusCode = 404;
+          throw error;
+        }
+        if (!result.modifiedCount) {
+          res.status(200).json({message: "Saved Post.", postId: postId});
+        } else {
+          res.status(200).json({message: "Post has been saved and updated.", postId: postId});
+        }
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  }
+}
+
+exports.deletePost = (req, res, next) => {
+  const postId = req.params.postId;
+
+  DailyLog.deleteOne({_id: postId})
+  .then(result => {
+    if(!result.acknowledged) {
+      const error = new Error('Post deletion failed.');
+      error.statusCode = 500;
+      throw error;
+    }
+    if(!result.deletedCount) {
+      const error = new Error('Post found, unable to delete.');
+      error.statusCode = 500;
+      throw error;
+    }
+
+    res.status(200).json({message: `Post ${postId} was successfully deleted.`});
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  });
 }
