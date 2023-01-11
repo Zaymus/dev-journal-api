@@ -13,35 +13,44 @@ exports.postCreateUser = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  verifyData({
+  const isValidData = verifyData({
     email: email,
     password: password
   });
 
-  bcrypt
-    .hash(password, 12)
-    .then(hashedPassword => {
-      return User.create({
-        email: email,
-        password: hashedPassword
-      });
-    })
-    .then(user => {
-      User.find({email: email}).then(users => {
-        if (users.length > 1) {
-          const error = new Error("Email address is already in use. Please use another one.");
-          error.statusCode = 400;
-          User.deleteOne(user)
-          .then(result => {
-            next(error);
-          })
-          .catch(err => {
-            next(err);
-          });
-        }
-        else {
-          res.status(201).json(user);
-        }
+  if(isValidData) {
+    bcrypt
+      .hash(password, 12)
+      .then(hashedPassword => {
+        return User.create({
+          email: email,
+          password: hashedPassword
+        });
+      })
+      .then(user => {
+        User.find({email: email})
+        .then(users => {
+          if (users.length > 1) {
+            const error = new Error("Email address is already in use. Please use another one.");
+            error.statusCode = 400;
+            User.deleteOne(user)
+            .then(result => {
+              next(error);
+            })
+            .catch(err => {
+              next(err);
+            });
+          }
+          else {
+            res.status(201).json(user);
+          }
+        })
+        .catch(err => {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        });
       })
       .catch(err => {
         if (!err.statusCode) {
@@ -49,13 +58,7 @@ exports.postCreateUser = (req, res, next) => {
         }
         next(err);
       });
-    })
-    .catch(err => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    })
+  }
 }
 
 exports.postLogin = (req, res, next) => {
