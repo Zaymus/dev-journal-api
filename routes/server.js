@@ -16,7 +16,11 @@ const mailOptions = {
   auth: {
     user: env.MAIL_USER,
     pass: env.MAIL_PASS,
-  }
+  },
+	pool: true,
+	maxConnections: 1,
+	rateDelta: 15000,
+	rateLimit: 5,
 };
 
 var transport = nodemailer.createTransport(mailOptions, function (err, info) {
@@ -27,8 +31,8 @@ var transport = nodemailer.createTransport(mailOptions, function (err, info) {
 });
 
 const dailyLogReminder = cron.schedule('0 0 22 * * 0-6', () => {
-	console.log("Reminding user to make or update daily log");
-	User.find()
+	console.log("Reminding users to make or update daily log");
+	User.find({notificationsEnabled: true})
 		.then(users => {
 			if(!users.length > 0) {
 				const error = new Error('Could not retrieve users.');
@@ -37,10 +41,6 @@ const dailyLogReminder = cron.schedule('0 0 22 * * 0-6', () => {
 			}
 
 			users.forEach(user => {
-				if (!user.email.length > 0) {
-					return;
-				}
-
 				transport.sendMail({
 					to: user.email,
 					from: "no-reply@api.com",

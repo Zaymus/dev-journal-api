@@ -12,6 +12,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  notificationsEnabled: {
+    type: Boolean,
+    default: true,
+  },
   posts: [
     {
       type: Schema.Types.ObjectId,

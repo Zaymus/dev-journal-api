@@ -124,3 +124,34 @@ exports.deleteUser = (req, res, next) => {
     next(err);
   })
 }
+
+exports.postNotificationPerms = (req, res, next) => {
+  const userId = req.params.userId;
+  const preference = req.query.enabled;
+
+  const updateDoc = {
+    $set: {
+      notificationsEnabled: preference
+    }
+  }
+
+  User.updateOne({_id: userId}, updateDoc)
+  .then(result => {
+    if (!result.matchedCount) {
+      const error = new Error('Could not find user.');
+      error.statusCode = 400;
+      throw error;
+    }
+    if (!result.modifiedCount) {
+      res.status(200).json({message: "User notification preferences saved."});
+    }
+
+    res.status(200).json({message: "User notification preferences saved and updated."});
+  })
+  .catch(err => {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  })
+}

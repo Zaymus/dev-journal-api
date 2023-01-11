@@ -8,4 +8,6 @@ router.post("/login", usersController.postLogin);
 
 router.delete("/:userId", usersController.deleteUser);
 
+router.patch("/notifications/:userId", usersController.postNotificationPerms);
+
 module.exports = router;
