@@ -15,7 +15,8 @@ SERVER_STATUS = {
 POST_TYPES = {
 	DAILY_LOG: "daily-log",
 	SOLUTION_LOG: "solution",
-	CONVERSATION_LOG: "conversation"
+	CONVERSATION_LOG: "conversation",
+	NOTE: "note",
 }
 
 module.exports = {

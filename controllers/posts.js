@@ -1,4 +1,4 @@
-const { DailyLog, ConversationLog, SolutionLog} = require("../models/post");
+const { DailyLog, ConversationLog, SolutionLog, Note } = require("../models/post");
 const User = require("../models/user");
 const { POST_TYPES, env } = require("../util/constants");
 
@@ -6,6 +6,11 @@ exports.postCreatePost = (req, res, next) => {
   const date = new Date();
   const type = req.query.type;
   var postData;
+  if(!Object.values(POST_TYPES).includes(type)) {
+    const error = new Error(`Unknown post type: \"${type}\".`);
+    error.statusCode = 500;
+    next(error);
+  }
 
   User.findById(req.userId)
   .then(user => {
@@ -76,10 +81,26 @@ exports.postCreatePost = (req, res, next) => {
         }
         next(err);
       })
-    } else {
-      const error = new Error(`Unknown post type: \"${type}\".`);
-      error.statusCode = 500;
-      next(error);
+    } else if (type === POST_TYPES.NOTE) {
+      Note.create({
+        date: date,
+        title: req.body.title,
+        content: req.body.content,
+      })
+      .then(post => {
+        postData = post;
+        user.posts.push(post);
+        return user.save();
+      })
+      .then(result => {
+        res.status(201).json({message: "Post created Successfully!", post: postData});
+      })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      })
     }
   })
   .catch(err => {
@@ -129,6 +150,13 @@ exports.getPostById = (req, res, next) => {
 exports.patchPost = (req, res, next) => {
   const postId = req.params.postId;
   const postType = req.query.postType;
+  
+  if(!Object.values(POST_TYPES).includes(postType)) {
+    const error = new Error(`Unknown post type: \"${postType}\".`);
+    error.statusCode = 500;
+    next(error);
+  }
+
   const dailyLogDoc = {
     $set: {
       accomplished: req.body.accomplished, 
@@ -148,6 +176,13 @@ exports.patchPost = (req, res, next) => {
       solution: req.body.solution, 
     }
   };
+  const noteDoc = {
+    $set: {
+      title: req.body.title,
+      content: req.body.content,
+    }
+  };
+
   var docType;
   var updateDoc;
 
@@ -160,10 +195,9 @@ exports.patchPost = (req, res, next) => {
   } else if (postType === POST_TYPES.SOLUTION_LOG) {
     docType = SolutionLog;
     updateDoc = solutionLogDoc;
-  } else {
-    const error = new Error(`Unknown post type: \"${type}\".`);
-    error.statusCode = 500;
-    next(error);
+  } else if (postType === POST_TYPES.NOTE) {
+    docType = Note;
+    updateDoc = noteDoc;
   }
 
   if(updateDoc && docType) {

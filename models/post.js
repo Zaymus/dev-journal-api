@@ -81,12 +81,29 @@ const solutionSchema = new Schema({
   },
 });
 
+const noteSchema = new Schema({
+  date: {
+    type: Date,
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  content: {
+    type: String,
+    required: true,
+  },
+})
+
 const DailyLog = mongoose.model("DailyLog", logSchema, "posts");
 const ConversationLog = mongoose.model("Conversation", conversationSchema, "posts");
 const SolutionLog = mongoose.model("Solution", solutionSchema, "posts");
+const Note = mongoose.model("Note", noteSchema, "posts");
 
 module.exports = {
   DailyLog,
   ConversationLog,
   SolutionLog,
+  Note,
 }
