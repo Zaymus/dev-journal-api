@@ -89,10 +89,17 @@ exports.postCreatePost = async (req, res, next) => {
       next(err);
     })
   } else if (type === POST_TYPES.NOTE) {
+    var tags = req.body.tags?.toLowerCase().split('|');
+
+    if(!tags) {
+      tags = "";
+    }
+
     Note.create({
       date: date,
       title: req.body.title,
       content: req.body.content,
+      tags: tags,
     })
     .then(post => {
       postData = post;
@@ -145,6 +152,30 @@ exports.getPostById = (req, res, next) => {
     }
     next(err);
   })
+}
+
+exports.getPostsByTags = async(req, res, next) => {
+  const tags = req.body.tags?.split('|');
+  if (!tags[0].length > 0) {
+    const error = new Error('No tags supplied');
+    error.statusCode = 400;
+    next(error);
+  }
+
+  try {
+    const posts = await Note.find({tags: {$in: tags}});
+    if (!posts.length > 0) {
+      const error = new Error(`Could not find posts with tags: ${tags.join(", ")}`);
+      error.statusCode = 400;
+      throw error;
+    }
+    res.status(200).json({postCount: posts.length, posts: posts});
+  } catch(err) {
+    if(!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
 }
 
 exports.patchPost = (req, res, next) => {

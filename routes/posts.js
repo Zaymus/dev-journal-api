@@ -7,6 +7,8 @@ router.post("/new", isAuth, postsController.postCreatePost);
 
 router.get("/all", isAuth, postsController.getAllPosts);
 
+router.get("/tags", isAuth, postsController.getPostsByTags);
+
 router.get("/:postId", isAuth, postsController.getPostById);
 
 router.patch("/edit/:postId", isAuth, postsController.patchPost);

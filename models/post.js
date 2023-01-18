@@ -94,6 +94,10 @@ const noteSchema = new Schema({
     type: String,
     required: true,
   },
+  tags: [{
+    type: String,
+    required: false,
+  }],
 })
 
 const DailyLog = mongoose.model("DailyLog", logSchema, "posts");
