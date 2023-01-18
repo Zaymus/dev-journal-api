@@ -2,113 +2,113 @@ const { DailyLog, ConversationLog, SolutionLog, Note } = require("../models/post
 const User = require("../models/user");
 const { POST_TYPES, env } = require("../util/constants");
 
-exports.postCreatePost = (req, res, next) => {
+exports.postCreatePost = async (req, res, next) => {
   const date = new Date();
   const type = req.query.type;
   var postData;
+  
   if(!Object.values(POST_TYPES).includes(type)) {
     const error = new Error(`Unknown post type: \"${type}\".`);
     error.statusCode = 500;
     next(error);
   }
 
-  User.findById(req.userId)
-  .then(user => {
-    if (type === POST_TYPES.DAILY_LOG) {
-      DailyLog.create({
-        date: date,
-        author: user._id,
-        type: type,
-        accomplished: req.body.accomplished,
-        didWell: req.body.didWell,
-        tomorrowTasks: req.body.tomorrowTasks,
-      })
-      .then(post => {
-        postData = post;
-        user.posts.push(post);
-        return user.save();
-      })
-      .then(result => {
-        res.status(201).json({message: "Post created Successfully!", post: postData});
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      })
-    } else if (type === POST_TYPES.CONVERSATION_LOG) {
-      ConversationLog.create({
-        date: date,
-        author: user._id,
-        type: type,
-        colleague: req.body.colleague,
-        notes: req.body.notes,
-      })
-      .then(post => {
-        postData = post;
-        user.posts.push(post);
-        return user.save();
-      })
-      .then(result => {
-        res.status(201).json({message: "Post created Successfully!", post: postData});
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      })
-    } else if (type === POST_TYPES.SOLUTION_LOG) {
-      SolutionLog.create({
-        date: date,
-        author: user._id,
-        type: type,
-        problem: req.body.problem,
-        solution: req.body.solution,
-      })
-      .then(post => {
-        postData = post;
-        user.posts.push(post);
-        return user.save();
-      })
-      .then(result => {
-        res.status(201).json({message: "Post created Successfully!", post: postData});
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      })
-    } else if (type === POST_TYPES.NOTE) {
-      Note.create({
-        date: date,
-        title: req.body.title,
-        content: req.body.content,
-      })
-      .then(post => {
-        postData = post;
-        user.posts.push(post);
-        return user.save();
-      })
-      .then(result => {
-        res.status(201).json({message: "Post created Successfully!", post: postData});
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      })
-    }
-  })
-  .catch(err => {
-    if (!err.statusCode) {
-      err.statusCode = 500;
-    }
-    next(err);
-  })
+  const user = await User.findById(req.userId);
+
+  if (!user) {
+    const error = new Error(`Could not find user with id: ${req.userId}`);
+    error.statusCode = 400;
+    next(error);
+  }
+
+  if (type === POST_TYPES.DAILY_LOG) {
+    DailyLog.create({
+      date: date,
+      author: user._id,
+      type: type,
+      accomplished: req.body.accomplished,
+      didWell: req.body.didWell,
+      tomorrowTasks: req.body.tomorrowTasks,
+    })
+    .then(post => {
+      postData = post;
+      user.posts.push(post);
+      return user.save();
+    })
+    .then(result => {
+      res.status(201).json({message: "Post created Successfully!", post: postData});
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    })
+  } else if (type === POST_TYPES.CONVERSATION_LOG) {
+    ConversationLog.create({
+      date: date,
+      author: user._id,
+      type: type,
+      colleague: req.body.colleague,
+      notes: req.body.notes,
+    })
+    .then(post => {
+      postData = post;
+      user.posts.push(post);
+      return user.save();
+    })
+    .then(result => {
+      res.status(201).json({message: "Post created Successfully!", post: postData});
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    })
+  } else if (type === POST_TYPES.SOLUTION_LOG) {
+    SolutionLog.create({
+      date: date,
+      author: user._id,
+      type: type,
+      problem: req.body.problem,
+      solution: req.body.solution,
+    })
+    .then(post => {
+      postData = post;
+      user.posts.push(post);
+      return user.save();
+    })
+    .then(result => {
+      res.status(201).json({message: "Post created Successfully!", post: postData});
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    })
+  } else if (type === POST_TYPES.NOTE) {
+    Note.create({
+      date: date,
+      title: req.body.title,
+      content: req.body.content,
+    })
+    .then(post => {
+      postData = post;
+      user.posts.push(post);
+      return user.save();
+    })
+    .then(result => {
+      res.status(201).json({message: "Post created Successfully!", post: postData});
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    })
+  }
 }
 
 exports.getAllPosts = (req, res, next) => {
