@@ -16,11 +16,45 @@ const userSchema = new Schema({
     type: Boolean,
     default: true,
   },
-  posts: [
+  goals: [
     {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-    },
+      title: {
+        type: String,
+        required: true,
+      },
+      description: {
+        type: String,
+        required: true,
+      },
+      timeline: {
+        type: Date,
+        required: true,
+      },
+      progress: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0,
+        required: true,
+      },
+      completed: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+      updates: [
+        {
+          description: {
+            type: String,
+            required: true,
+          },
+          date: {
+            type: Date,
+            required: true,
+          }
+        }
+      ]
+    }, 
   ],
 });
 

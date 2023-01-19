@@ -31,12 +31,7 @@ exports.postCreatePost = async (req, res, next) => {
       tomorrowTasks: req.body.tomorrowTasks,
     })
     .then(post => {
-      postData = post;
-      user.posts.push(post);
-      return user.save();
-    })
-    .then(result => {
-      res.status(201).json({message: "Post created Successfully!", post: postData});
+      res.status(201).json({message: "Post created Successfully!", post: post});
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -53,12 +48,7 @@ exports.postCreatePost = async (req, res, next) => {
       notes: req.body.notes,
     })
     .then(post => {
-      postData = post;
-      user.posts.push(post);
-      return user.save();
-    })
-    .then(result => {
-      res.status(201).json({message: "Post created Successfully!", post: postData});
+      res.status(201).json({message: "Post created Successfully!", post: post});
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -75,12 +65,7 @@ exports.postCreatePost = async (req, res, next) => {
       solution: req.body.solution,
     })
     .then(post => {
-      postData = post;
-      user.posts.push(post);
-      return user.save();
-    })
-    .then(result => {
-      res.status(201).json({message: "Post created Successfully!", post: postData});
+      res.status(201).json({message: "Post created Successfully!", post: post});
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -102,12 +87,7 @@ exports.postCreatePost = async (req, res, next) => {
       tags: tags,
     })
     .then(post => {
-      postData = post;
-      user.posts.push(post);
-      return user.save();
-    })
-    .then(result => {
-      res.status(201).json({message: "Post created Successfully!", post: postData});
+      res.status(201).json({message: "Post created Successfully!", post: post});
     })
     .catch(err => {
       if (!err.statusCode) {
