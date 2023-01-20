@@ -3,6 +3,45 @@ const Schema = mongoose.Schema;
 
 const { userValidation } = require("../util/constants");
 
+const goalSchema = new Schema({
+  title: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  timeline: {
+    type: Date,
+    required: true,
+  },
+  progress: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 0,
+    required: true,
+  },
+  completed: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  updates: [
+    {
+      description: {
+        type: String,
+        required: true,
+      },
+      date: {
+        type: Date,
+        required: true,
+      }
+    }
+  ]
+})
+
 const userSchema = new Schema({
   email: {
     type: String,
@@ -17,44 +56,7 @@ const userSchema = new Schema({
     default: true,
   },
   goals: [
-    {
-      title: {
-        type: String,
-        required: true,
-      },
-      description: {
-        type: String,
-        required: true,
-      },
-      timeline: {
-        type: Date,
-        required: true,
-      },
-      progress: {
-        type: Number,
-        min: 0,
-        max: 100,
-        default: 0,
-        required: true,
-      },
-      completed: {
-        type: Boolean,
-        required: true,
-        default: false,
-      },
-      updates: [
-        {
-          description: {
-            type: String,
-            required: true,
-          },
-          date: {
-            type: Date,
-            required: true,
-          }
-        }
-      ]
-    }, 
+    goalSchema 
   ],
 });
 

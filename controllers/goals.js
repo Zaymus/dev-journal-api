@@ -153,3 +153,35 @@ exports.patchGoal = async (req, res, next) => {
     next(err);
   }
 }
+
+exports.deleteGoal = async (req, res, next) => {
+  const goalId = req.params.goalId;
+  const updateDoc = {
+    $pull: {
+      goals: {
+        _id: goalId,
+      }
+    }
+  }
+
+  try {
+    const result = await User.updateOne({
+      _id: req.userId,
+    }, 
+    updateDoc,
+    );
+
+    if (!result.modifiedCount) {
+      const error = new Error('Goal could not be found or was unable to be removed.');
+      error.statusCode = 500;
+      throw error;
+    }
+
+    res.status(200).json({message: "Goal was successfully removed"});
+  } catch (err) {
+    if(!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+}

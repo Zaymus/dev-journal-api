@@ -10,4 +10,6 @@ router.get("/:goalId", goalsController.getGoalById);
 
 router.patch("/:goalId", goalsController.patchGoal);
 
+router.delete("/:goalId", goalsController.deleteGoal);
+
 module.exports = router;
