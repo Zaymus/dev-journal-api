@@ -10,6 +10,8 @@ router.post("/login", usersController.postLogin);
 
 router.use("/goals", isAuth, goalRoutes);
 
+router.get("/:userId", usersController.getUserById);
+
 router.delete("/:userId", usersController.deleteUser);
 
 router.patch("/notifications/:userId", usersController.postNotificationPerms);
