@@ -9,7 +9,7 @@ const verifyData = (userData) => {
   return isValidEmail && isValidPassword;
 };
 
-exports.postCreateUser = (req, res, next) => {
+exports.postCreateUser = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
 
@@ -19,99 +19,76 @@ exports.postCreateUser = (req, res, next) => {
   });
 
   if(isValidData) {
-    bcrypt
-      .hash(password, 12)
-      .then(hashedPassword => {
-        return User.create({
-          email: email,
-          password: hashedPassword
-        });
-      })
-      .then(user => {
-        User.find({email: email})
-        .then(users => {
-          if (users.length > 1) {
-            const error = new Error("Email address is already in use. Please use another one.");
-            error.statusCode = 400;
-            User.deleteOne(user)
-            .then(result => {
-              next(error);
-            })
-            .catch(err => {
-              next(err);
-            });
-          }
-          else {
-            res.status(201).json(user);
-          }
-        })
-        .catch(err => {
-          if (!err.statusCode) {
-            err.statusCode = 500;
-          }
-          next(err);
-        });
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
+    try {
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      const user = await User.create({
+        email: email,
+        password: hashedPassword
       });
+
+      const users = await User.find({email: email});
+
+      if (users.length > 1) {
+        const error = new Error("Email address is already in use. Please use another one.");
+        error.statusCode = 400;
+        const result = await User.deleteOne({_id: user._id});
+        next(error);
+      }
+      else {
+        res.status(201).json(user);
+      }
+    } catch (err) {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    }
   }
 }
 
-exports.postLogin = (req, res, next) => {
+exports.postLogin = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  User.findOne({email: email})
-  .then(user => {
+  try {
+    const user = await User.findOne({email: email});
     if (!user) {
       const error = new Error("Incorrect email/password, please Try again");
       error.statusCode = 400;
       next(error);
     } else {
-      bcrypt.compare(password, user.password)
-      .then(result => {
-        if (!result) {
-          const error = new Error("Incorrect email/password, please Try again");
-          error.statusCode = 400;
-          next(error);
-        } else {
-          const token = jwt.sign(
-            {
-              email: user.email,
-              userId: user._id,
-            },
-            env.JWT_SECRET,
-            {expiresIn: '1h'}
-          );
+      const result = await bcrypt.compare(password, user.password);
+      if (!result) {
+        const error = new Error("Incorrect email/password, please Try again");
+        error.statusCode = 400;
+        next(error);
+      } else {
+        const token = jwt.sign(
+          {
+            email: user.email,
+            userId: user._id,
+          },
+          env.JWT_SECRET,
+          {expiresIn: '1h'}
+        );
 
-          res.status(200).json({token: token, userId: user._id.toString()});
-        }
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      })
+        res.status(200).json({token: token, userId: user._id.toString()});
+      }
     }
-  })
-  .catch(err => {
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
-  })
+  }
 }
 
-exports.deleteUser = (req, res, next) => {
+exports.getUserById = async (req, res, next) => {
   const userId = req.params.userId;
 
-  User.findByIdAndDelete(userId)
-  .then(user => {
+  try {
+    const user = await User.findById(userId);
     if (!user) {
       const error = new Error(`Could not find a user with the given id.`);
       error.statusCode = 404;
@@ -119,16 +96,34 @@ exports.deleteUser = (req, res, next) => {
     }
 
     res.status(200).json(user);
-  })
-  .catch(err => {
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
-  })
+  }
 }
 
-exports.postNotificationPerms = (req, res, next) => {
+exports.deleteUser = async (req, res, next) => {
+  const userId = req.params.userId;
+  try {
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      const error = new Error(`Could not find a user with the given id.`);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+}
+
+exports.postNotificationPerms = async (req, res, next) => {
   const userId = req.params.userId;
   const preference = req.query.enabled;
 
@@ -138,8 +133,8 @@ exports.postNotificationPerms = (req, res, next) => {
     }
   }
 
-  User.updateOne({_id: userId}, updateDoc)
-  .then(result => {
+  try {
+    const result = await User.updateOne({_id: userId}, updateDoc);
     if (!result.matchedCount) {
       const error = new Error('Could not find user.');
       error.statusCode = 400;
@@ -150,11 +145,10 @@ exports.postNotificationPerms = (req, res, next) => {
     }
 
     res.status(200).json({message: "User notification preferences saved and updated."});
-  })
-  .catch(err => {
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
-  })
+  }
 }

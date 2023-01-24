@@ -5,7 +5,6 @@ const { POST_TYPES, env } = require("../util/constants");
 exports.postCreatePost = async (req, res, next) => {
   const date = new Date();
   const type = req.query.type;
-  var postData;
   
   if(!Object.values(POST_TYPES).includes(type)) {
     const error = new Error(`Unknown post type: \"${type}\".`);
@@ -22,57 +21,58 @@ exports.postCreatePost = async (req, res, next) => {
   }
 
   if (type === POST_TYPES.DAILY_LOG) {
-    DailyLog.create({
-      date: date,
-      author: user._id,
-      type: type,
-      accomplished: req.body.accomplished,
-      didWell: req.body.didWell,
-      tomorrowTasks: req.body.tomorrowTasks,
-    })
-    .then(post => {
+    try {
+      const post = await DailyLog.create({
+        date: date,
+        author: user._id,
+        type: type,
+        accomplished: req.body.accomplished,
+        didWell: req.body.didWell,
+        tomorrowTasks: req.body.tomorrowTasks,
+      });
+
       res.status(201).json({message: "Post created Successfully!", post: post});
-    })
-    .catch(err => {
+    } catch (err) {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
       next(err);
-    })
+    } 
   } else if (type === POST_TYPES.CONVERSATION_LOG) {
-    ConversationLog.create({
-      date: date,
-      author: user._id,
-      type: type,
-      colleague: req.body.colleague,
-      notes: req.body.notes,
-    })
-    .then(post => {
+    try {
+      const post = await ConversationLog.create({
+        date: date,
+        author: user._id,
+        type: type,
+        colleague: req.body.colleague,
+        notes: req.body.notes,
+      });
+
       res.status(201).json({message: "Post created Successfully!", post: post});
-    })
-    .catch(err => {
+    } catch (err) {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
       next(err);
-    })
+    }
   } else if (type === POST_TYPES.SOLUTION_LOG) {
-    SolutionLog.create({
-      date: date,
-      author: user._id,
-      type: type,
-      problem: req.body.problem,
-      solution: req.body.solution,
-    })
-    .then(post => {
+    try {
+      const post = await SolutionLog.create({
+        date: date,
+        author: user._id,
+        type: type,
+        problem: req.body.problem,
+        solution: req.body.solution,
+      });
+      
       res.status(201).json({message: "Post created Successfully!", post: post});
-    })
-    .catch(err => {
+    } catch (err) {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
       next(err);
-    })
+    }
+    
   } else if (type === POST_TYPES.NOTE) {
     var tags = req.body.tags?.toLowerCase().split('|');
 
@@ -80,29 +80,30 @@ exports.postCreatePost = async (req, res, next) => {
       tags = "";
     }
 
-    Note.create({
-      date: date,
-      title: req.body.title,
-      content: req.body.content,
-      tags: tags,
-    })
-    .then(post => {
+    try {
+      const post = await Note.create({
+        date: date,
+        title: req.body.title,
+        content: req.body.content,
+        tags: tags,
+      });
+      
       res.status(201).json({message: "Post created Successfully!", post: post});
-    })
-    .catch(err => {
+    } catch (err) {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
       next(err);
-    })
+    }
   }
 }
 
-exports.getAllPosts = (req, res, next) => {
+exports.getAllPosts = async (req, res, next) => {
   let userId = req.userId ? req.userId : env.DEFAULT_USER_ID;
 
-  DailyLog.find({author: userId})
-  .then(posts => {
+  try {
+    const posts = await DailyLog.find({author: userId});
+    
     if (!posts.length > 0) {
       const error = new Error('Could not retrieve posts');
       error.statusCode = 500;
@@ -110,31 +111,31 @@ exports.getAllPosts = (req, res, next) => {
     }
 
     res.status(200).json(posts);
-  })
-  .catch(err => {
+    
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
-  })
+  }
 }
 
-exports.getPostById = (req, res, next) => {
+exports.getPostById = async (req, res, next) => {
   const postId = req.params.postId;
 
-  DailyLog.findById(postId)
-  .then(post => {
+  try {
+    const post = await DailyLog.findById(postId);
+
     res.status(200).json(post);
-  })
-  .catch(err => {
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
-  })
+  }
 }
 
-exports.getPostsByTags = async(req, res, next) => {
+exports.getPostsByTags = async (req, res, next) => {
   const tags = req.body.tags?.split('|');
   if (!tags[0].length > 0) {
     const error = new Error('No tags supplied');
@@ -158,10 +159,10 @@ exports.getPostsByTags = async(req, res, next) => {
   }
 }
 
-exports.patchPost = (req, res, next) => {
+exports.patchPost = async (req, res, next) => {
   const postId = req.params.postId;
   const postType = req.query.postType;
-  
+
   if(!Object.values(POST_TYPES).includes(postType)) {
     const error = new Error(`Unknown post type: \"${postType}\".`);
     error.statusCode = 500;
@@ -212,61 +213,54 @@ exports.patchPost = (req, res, next) => {
   }
 
   if(updateDoc && docType) {
-    docType.findById(postId)
-    .then(post => {
+    try {
+      const post = await docType.findById(postId);
+
       if (!post) {
         const error = new Error(`Could not find post: ${postId}`);
         error.statusCode = 400;
         throw error;
       }
-      return post.type === POST_TYPES.DAILY_LOG ? post.editable : true;
-    })
-    .then(editable => {
+      const editable = post.type === POST_TYPES.DAILY_LOG ? post.editable : true;
+
       if (!editable) {
         const error = new Error('Post is no longer availble to be edited.');
         error.statusCode = 400;
         throw error;
       }
 
-      docType.updateOne({_id: postId}, updateDoc)
-      .then(result => {
-        if(!result.acknowledged) {
-          const error = new Error('Post update failed.');
-          error.statusCode = 500;
-          throw error;
-        }
-        if(!result.matchedCount) {
-          const error = new Error(`Failed to fetch post with id: ${postId}.`);
-          error.statusCode = 404;
-          throw error;
-        }
-        if (!result.modifiedCount) {
-          res.status(200).json({message: "Post has been saved.", postId: postId});
-        } else {
-          res.status(200).json({message: "Post has been saved and updated.", postId: postId});
-        }
-      })
-      .catch(err => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-    })
-    .catch(err => {
+      const result = await docType.updateOne({_id: postId}, updateDoc);
+
+      if(!result.acknowledged) {
+        const error = new Error('Post update failed.');
+        error.statusCode = 500;
+        throw error;
+      }
+      if(!result.matchedCount) {
+        const error = new Error(`Failed to fetch post with id: ${postId}.`);
+        error.statusCode = 404;
+        throw error;
+      }
+      if (!result.modifiedCount) {
+        res.status(200).json({message: "Post has been saved.", postId: postId});
+      } else {
+        res.status(200).json({message: "Post has been saved and updated.", postId: postId});
+      }
+    } catch (err) {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
       next(err);
-    });
+    }
   }
 }
 
-exports.deletePost = (req, res, next) => {
+exports.deletePost = async (req, res, next) => {
   const postId = req.params.postId;
 
-  DailyLog.deleteOne({_id: postId})
-  .then(result => {
+  try {
+    const result = await DailyLog.deleteOne({_id: postId});
+
     if(!result.acknowledged || !result.deletedCount) {
       const error = new Error('Unable to find or delete post.');
       error.statusCode = 500;
@@ -274,11 +268,10 @@ exports.deletePost = (req, res, next) => {
     }
 
     res.status(200).json({message: `Post ${postId} was successfully deleted.`});
-  })
-  .catch(err => {
+  } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
     }
     next(err);
-  });
+  }
 }
