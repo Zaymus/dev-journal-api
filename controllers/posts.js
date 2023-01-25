@@ -229,7 +229,7 @@ exports.patchPost = async (req, res, next) => {
         throw error;
       }
 
-      const result = await docType.updateOne({_id: postId}, updateDoc);
+      const result = await docType.updateOne({_id: postId}, updateDoc, {runValidators: true});
 
       if(!result.acknowledged) {
         const error = new Error('Post update failed.');

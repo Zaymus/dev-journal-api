@@ -22,14 +22,17 @@ const logSchema = new Schema({
   accomplished: {
     type: String,
     required: true,
+    minlength: 3,
   },
   didWell: {
     type: String,
     required: true,
+    minlength: 3,
   },
   tomorrowTasks: {
     type: String,
     required: true,
+    minlength: 3,
   },
 });
 
@@ -50,10 +53,12 @@ const conversationSchema = new Schema({
   colleague: {
     type: String,
     required: true,
+    minlength: 3,
   },
   notes: {
     type: String,
     required: true,
+    minlength: 3,
   },
 });
 
@@ -74,10 +79,12 @@ const solutionSchema = new Schema({
   problem: {
     type: String,
     required: true,
+    minlength: 3,
   },
   solution: {
     type: String,
     required: true,
+    minlength: 3,
   },
 });
 
@@ -89,10 +96,12 @@ const noteSchema = new Schema({
   title: {
     type: String,
     required: true,
+    minlength: 3,
   },
   content: {
     type: String,
     required: true,
+    minlength: 3,
   },
   tags: [{
     type: String,
