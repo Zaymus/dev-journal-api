@@ -13,7 +13,7 @@ exports.postGoal = async (req, res, next) => {
         goals: goal
       }
     }
-    const result = await User.updateOne({_id: req.userId}, updateDoc);
+    const result = await User.updateOne({_id: req.userId}, updateDoc, {runValidators: true});
     if (!result.matchedCount) {
       const error = new Error('Could not find user.');
       error.statusCode = 400;
@@ -94,7 +94,7 @@ exports.updateGoal = async (req, res, next) => {
     const result = await User.updateOne({
       _id: req.userId, 
       "goals._id": goalId
-    }, updateDoc);
+    }, updateDoc, {runValidators: true});
     
     if (!result.matchedCount) {
       const error = new Error('Could not find user or goal.');
@@ -131,7 +131,7 @@ exports.patchGoal = async (req, res, next) => {
     const result = await User.updateOne({
       _id: req.userId, 
       "goals._id": goalId
-    }, updateDoc);
+    }, updateDoc, {runValidators: true});
 
     if (!result.matchedCount) {
       const error = new Error('Could not find user or goal.');

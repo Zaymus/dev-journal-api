@@ -7,10 +7,13 @@ const goalSchema = new Schema({
   title: {
     type: String,
     required: true,
+    minlength: 4,
+    maxlength: 48,
   },
   description: {
     type: String,
     required: true,
+    minlength: 24,
   },
   timeline: {
     type: Date,
@@ -33,6 +36,7 @@ const goalSchema = new Schema({
       description: {
         type: String,
         required: true,
+        minlength: 4,
       },
       date: {
         type: Date,

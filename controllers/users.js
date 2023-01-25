@@ -3,47 +3,37 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const { env } = require('../util/constants');
 
-const verifyData = (userData) => {
-  let isValidEmail = User.verifyEmail(userData.email);
-	let isValidPassword = User.verifyPassword(userData.password);
-  return isValidEmail && isValidPassword;
-};
-
 exports.postCreateUser = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  const isValidData = verifyData({
-    email: email,
-    password: password
-  });
+  try {
+    User.verifyEmail(userData.email);
+	  User.verifyPassword(userData.password);
 
-  if(isValidData) {
-    try {
-      const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-      const user = await User.create({
-        email: email,
-        password: hashedPassword
-      });
+    const user = await User.create({
+      email: email,
+      password: hashedPassword
+    });
 
-      const users = await User.find({email: email});
+    const users = await User.find({email: email});
 
-      if (users.length > 1) {
-        const error = new Error("Email address is already in use. Please use another one.");
-        error.statusCode = 400;
-        const result = await User.deleteOne({_id: user._id});
-        next(error);
-      }
-      else {
-        res.status(201).json(user);
-      }
-    } catch (err) {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
+    if (users.length > 1) {
+      const error = new Error("Email address is already in use. Please use another one.");
+      error.statusCode = 400;
+      await User.deleteOne({_id: user._id});
+      next(error);
     }
+    else {
+      res.status(201).json(user);
+    }
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
 }
 
