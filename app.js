@@ -9,7 +9,9 @@ const apiRouter = express.Router();
 const serverRouter = require('./routes/server');
 const userRouter = require('./routes/users');
 const postRouter = require('./routes/posts');
+const taskRouter = require('./routes/tasks');
 
+apiRouter.use('/tasks', taskRouter);
 apiRouter.use('/server', serverRouter);
 apiRouter.use('/user', userRouter);
 apiRouter.use('/posts', postRouter);

@@ -19,9 +19,21 @@ POST_TYPES = {
 	NOTE: "note",
 }
 
+TASK_STATUS = {
+	INCOMPLETE: "Incomplete",
+	COMPELTE: "Compelted",
+}
+
+TASK_FREQUENCIES = {
+	DAY: "D",
+	WEEK: "W",
+}
+
 module.exports = {
 	env,
   userValidation,
   SERVER_STATUS,
 	POST_TYPES,
+	TASK_STATUS,
+	TASK_FREQUENCIES,
 }
