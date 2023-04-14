@@ -19,6 +19,12 @@ apiRouter.use('/posts', postRouter);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 // app.use(middleware);
+app.use(function (req, res, next) {
+	res.setHeader('Access-Control-Allow-Origin', env.APP_URL);
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Authorization');
+	next();
+});
 app.use('/api', apiRouter);
 
 app.use((error, req, res, next) => {
