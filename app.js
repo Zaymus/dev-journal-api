@@ -25,7 +25,7 @@ app.use(function (req, res, next) {
 	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Authorization');
 	next();
 });
-app.use('/api', apiRouter);
+app.use(apiRouter);
 
 app.use((error, req, res, next) => {
 	const status = error.statusCode || 500;
