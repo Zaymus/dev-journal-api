@@ -8,8 +8,8 @@ exports.postCreateUser = async (req, res, next) => {
   const password = req.body.password;
 
   try {
-    User.verifyEmail(userData.email);
-	  User.verifyPassword(userData.password);
+    User.verifyEmail(email);
+	  User.verifyPassword(password);
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -60,10 +60,13 @@ exports.postLogin = async (req, res, next) => {
             userId: user._id,
           },
           env.JWT_SECRET,
-          {expiresIn: '1h'}
+          {expiresIn: '12h'}
         );
 
-        res.status(200).json({token: token, userId: user._id.toString()});
+        const expiryDate = new Date();
+        expiryDate.setHours(expiryDate.getHours() + 12);
+
+        res.status(200).json({token: token, userId: user._id.toString(), expires: expiryDate});
       }
     }
   } catch (err) {
