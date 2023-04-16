@@ -4,7 +4,7 @@ const env = process.env;
 
 const allowedOrigins = [
 	"http://localhost:3000",
-	"https://devjournal.ca",
+	"https://www.devjournal.ca",
 ]
 
 const userValidation = {
