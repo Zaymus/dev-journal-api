@@ -2,6 +2,11 @@ const dotenv = require("dotenv").config();
 
 const env = process.env;
 
+const allowedOrigins = [
+	"http://localhost:3000",
+	"https://devjournal.ca",
+]
+
 const userValidation = {
 	EMAIL_FORMAT: new RegExp(/^([A-Za-z0-9])+@([A-Za-z0-9])+..([A-Za-z]{2,4})$/),
 	PASSWORD_FORMAT:
@@ -36,4 +41,5 @@ module.exports = {
 	POST_TYPES,
 	TASK_STATUS,
 	TASK_FREQUENCIES,
+	allowedOrigins,
 }

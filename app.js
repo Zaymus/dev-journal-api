@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const { env } = require('./util/constants');
+const { env, allowedOrigins } = require('./util/constants');
 
 const app = express();
 const apiRouter = express.Router();
@@ -20,7 +20,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
 // app.use(middleware);
 app.use(function (req, res, next) {
-	res.setHeader('Access-Control-Allow-Origin', env.APP_URL);
+	const origin = req.headers.origin;
+	if(allowedOrigins.includes(origin)) {
+		res.setHeader('Access-Control-Allow-Origin', origin);
+	}
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Authorization');
 	next();
