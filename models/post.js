@@ -93,6 +93,11 @@ const noteSchema = new Schema({
     type: Date,
     required: true,
   },
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   title: {
     type: String,
     required: true,

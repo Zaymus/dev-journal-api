@@ -83,6 +83,7 @@ exports.postCreatePost = async (req, res, next) => {
     try {
       const post = await Note.create({
         date: date,
+        author: user._id,
         title: req.body.title,
         type: type,
         content: req.body.content,
