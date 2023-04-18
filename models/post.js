@@ -98,6 +98,10 @@ const noteSchema = new Schema({
     required: true,
     minlength: 3,
   },
+  type: {
+    type: String,
+    required: true,
+  },
   content: {
     type: String,
     required: true,

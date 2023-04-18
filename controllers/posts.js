@@ -84,6 +84,7 @@ exports.postCreatePost = async (req, res, next) => {
       const post = await Note.create({
         date: date,
         title: req.body.title,
+        type: type,
         content: req.body.content,
         tags: tags,
       });
