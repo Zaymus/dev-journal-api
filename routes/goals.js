@@ -4,6 +4,8 @@ const goalsController = require("../controllers/goals");
 
 router.post("/", goalsController.postGoal);
 
+router.get("/", goalsController.getGoals);
+
 router.patch("/update/:goalId", goalsController.updateGoal);
 
 router.get("/:goalId", goalsController.getGoalById);

@@ -46,12 +46,37 @@ exports.postGoal = async (req, res, next) => {
   }
 }
 
+exports.getGoals = async(req, res, next) => {
+  try {
+    const user = await User.findById(req.userId);
+    if(!user) {
+      const error = new Error("Could not retrieve user data");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if(user.goals.length <= 0) {
+      const error = new Error("No goals found");
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json(user.goals);
+  }
+  catch(err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+}
+
 exports.getGoalById = async (req, res, next) => {
   try {
     const user = await User.findById(req.userId);
     if (!user) {
       const error = new Error(`Could not retrieve user data with id: ${req.userId}`);
-      error.statusCode(400);
+      error.statusCode = 404;
       throw error;
     }
 
@@ -61,7 +86,7 @@ exports.getGoalById = async (req, res, next) => {
     
     if(!goal) {
       const error = new Error(`Could not find goal with id: ${req.params.goalId}`);
-      error.statusCode = 400;
+      error.statusCode = 404;
       throw error;
     }
 
