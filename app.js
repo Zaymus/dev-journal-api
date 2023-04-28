@@ -10,13 +10,11 @@ const serverRouter = require('./routes/server');
 const userRouter = require('./routes/users');
 const postRouter = require('./routes/posts');
 const taskRouter = require('./routes/tasks');
-const goalRouter = require('./routes/goals');
 
 apiRouter.use('/tasks', taskRouter);
 apiRouter.use('/server', serverRouter);
 apiRouter.use('/user', userRouter);
 apiRouter.use('/posts', postRouter);
-apiRouter.use('/goals', goalRouter);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json());
