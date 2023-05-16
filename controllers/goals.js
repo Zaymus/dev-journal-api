@@ -152,6 +152,13 @@ exports.patchGoal = async (req, res, next) => {
         'goals.$.timeline': req.body.timeline,
       }
     };
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      const error = new Error(`Could not retrieve user data with id: ${req.userId}`);
+      error.statusCode = 404;
+      throw error;
+    }
 
     const result = await User.updateOne({
       _id: req.userId, 
@@ -170,7 +177,17 @@ exports.patchGoal = async (req, res, next) => {
       throw error;
     }
 
-    res.status(200).json({message: "Goal was successfully updated", goal: { _id: goalId, title: req.body.title, description: req.body.description, timeline: req.body.timeline }});
+    const goal = user.goals.filter(goal => {
+      return goal._id.toString() === req.params.goalId;
+    })[0];
+    
+    if(!goal) {
+      const error = new Error(`Could not find goal with id: ${req.params.goalId}`);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    res.status(200).json({message: "Goal was successfully updated", goal: goal});
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
