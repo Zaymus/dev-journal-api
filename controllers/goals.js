@@ -170,7 +170,7 @@ exports.patchGoal = async (req, res, next) => {
       throw error;
     }
 
-    res.status(200).json({message: "Goal was successfully updated", goalId: goalId});
+    res.status(200).json({message: "Goal was successfully updated", goal: { _id: goalId, title: req.body.title, description: req.body.description, timeline: req.body.timeline }});
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
