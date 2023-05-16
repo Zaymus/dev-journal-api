@@ -178,7 +178,7 @@ exports.patchGoal = async (req, res, next) => {
     }
 
     const goal = user.goals.filter(goal => {
-      return goal._id.toString() === req.params.goalId;
+      return goal._id.toString() === goalId;
     })[0];
     
     if(!goal) {
@@ -186,6 +186,10 @@ exports.patchGoal = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
+
+    goal.title = req.body.title;
+    goal.description = req.body.description;
+    goal.timeline = req.body.timeline;
 
     res.status(200).json({message: "Goal was successfully updated", goal: goal});
   } catch (err) {
